@@ -1,0 +1,6 @@
+type this bs on the pi's terminal to install mqtt (mosquitto) broker
+
+sudo apt update
+sudo apt install mosquitto mosquitto-clients
+sudo systemctl enable mosquitto
+sudo systemctl start mosquitto
