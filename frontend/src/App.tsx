@@ -82,7 +82,7 @@ export default function SmartCoolingUI() {
               min={16}
               max={35}
               step={0.5}
-              onChange={(e, val) => setTemperature(val)}
+              onChange={(_e, val) => setTemperature(val)}
               valueLabelDisplay="auto"
             />
           </Box>
@@ -101,7 +101,7 @@ export default function SmartCoolingUI() {
                 min={0}
                 max={100}
                 step={1}
-                onChange={(e, val) => handleManualFanLevelChange(val)}
+                onChange={(_e, val) => handleManualFanLevelChange(val)}
                 valueLabelDisplay="auto"
               />
             </Box>
