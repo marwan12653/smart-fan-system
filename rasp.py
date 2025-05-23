@@ -108,17 +108,25 @@ client.loop_start()
 try:
     print("Starting Smart Fan Control with MQTT...")
     while True:
-        humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
+        # Read temperature and humidity
+        humidity, current_temperature_reading = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
 
-        if temperature is not None and humidity is not None:
-            print(f"Temp: {temperature:.1f}°C  Humidity: {humidity:.1f}%")
-            client.publish(TOPIC_DATA, f"{temperature:.1f},{humidity:.1f}")
-            if not manual_mode:
-                set_fan_state(temperature)
+        if current_temperature_reading is not None and humidity is not None:
+            # Sensor reading successful
+            print(f"Temp: {current_temperature_reading:.1f}°C  Humidity: {humidity:.1f}%")
+            client.publish(TOPIC_DATA, f"{current_temperature_reading:.1f},{humidity:.1f}")
+            last_known_temperature = current_temperature_reading  # Update last known temperature
         else:
-            print("Failed to read from DHT22 sensor.")
+            # Sensor reading failed
+            print("Failed to read from DHT22 sensor. Auto mode will use last known temperature.")
+            # last_known_temperature will retain its previous value
 
-        time.sleep(2)
+        # Always call set_fan_state.
+        # The function itself will check 'manual_mode' and use 'manual_speed' if True,
+        # or use 'last_known_temperature' for auto mode.
+        set_fan_state(last_known_temperature)
+
+        time.sleep(2)  # Read sensor and update fan every 2 seconds
 
 except KeyboardInterrupt:
     print("Exiting program...")
