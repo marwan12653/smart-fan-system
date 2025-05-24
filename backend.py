@@ -1,8 +1,11 @@
 import paho.mqtt.client as mqtt
 from flask import Flask, jsonify,request
 from flask_cors import CORS
+import json
 
-BROKER = "192.168.1.83"  # pi's ip 
+BROKER = "9f9380d70315421682e1ea4346bd220a.s1.eu.hivemq.cloud"  # pi's ip 
+USERNAME = "hivemq.webclient.1748071295552"
+PASSWORD = "&W@x.jC0FpoH1,2Xq6Tb"
 TOPIC_DATA = "smartfan/data"
 TOPIC_CONTROL = "smartfan/control"
 currentTemp = 0.0
@@ -13,17 +16,21 @@ def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT Broker with result code "+str(rc))
     client.subscribe(TOPIC_DATA)
 
-def on_message(client, userdata, msg):
-    global currentTemp, currentHum
-    payload = msg.payload.decode()
-    temp, hum = payload.split(",")
-    currentTemp, currentHum = temp, hum
+def on_message(client, userdata, message):
+    global currentHum, currentTemp  # <-- this is essential
+    data = json.loads(message.payload.decode())
+    currentTemp = round(data.get("temperature", 0),1)
+    currentHum = round(data.get("humidity", 0),1)
+    
 
 client = mqtt.Client()
+client.username_pw_set(USERNAME, PASSWORD)
+client.tls_set()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect(BROKER, 1883)
+
+client.connect(BROKER, 8883)
 
 
 app = Flask(__name__)
@@ -59,5 +66,5 @@ def control():
         return jsonify({"status": "error", "message": "No command provided"}), 400
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5111, debug=True)
-    client.loop_start()
+    client.loop_start()  # Start MQTT loop first
+    app.run(host="0.0.0.0", port=5111, debug=True) 
